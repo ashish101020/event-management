@@ -102,7 +102,7 @@ router.put("/:eventId", authMiddleware, authorizeAll(), upload.array("photos", 5
 
     let event;
 
-    if (req.user.role === "admin") {
+    if (req.user.role === "Admin") {
       event = await Event.findById(eventId);
     } else {
       event = await Event.findOne({ _id: eventId, organizer: req.user.id });

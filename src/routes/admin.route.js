@@ -27,7 +27,7 @@ router.get(
 router.put(
   "/users/:user_id/approve-organizer",
   authMiddleware,
-  authorize(),
+  authorize(['Admin']),
   async (req, res) => {
     try {
       const { user_id } = req.params;
@@ -37,10 +37,9 @@ router.put(
         return res.status(404).json({ message: "Organizer request not found" });
       }
 
-
       await User.findByIdAndUpdate(user_id, { role: "Organizer" });
-  
-      await RequestedUser.deleteOne({ userId: user_id });
+
+      await RequestedUser.findByIdAndDelete(request._id);
 
       res.status(200).json({ message: "User approved as Organizer" });
     } catch (err) {
@@ -49,6 +48,7 @@ router.put(
     }
   }
 );
+
 
 
 router.delete("/event/:eventId", authMiddleware, authorize(), async (req, res) => {
