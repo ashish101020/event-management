@@ -2,7 +2,6 @@ const express = require('express');
 const authMiddleware = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/authorize.middleware');
 const RequestedUser = require('../models/requestForRole.model');
-const { deleteEventByAdmin } = require('../controllers/event.controller');
 
 const router = express.Router();
 

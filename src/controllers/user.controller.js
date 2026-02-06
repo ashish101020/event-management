@@ -1,9 +1,8 @@
 const requestedUser = require("../models/requestForRole.model");
 const User = require("../models/users.model");
 
-const requestForRole = async (req, res) => {
+const requestForUpgradeRole = async (req, res) => {
   const userId = req.user.id;
-  console.log("here");
   try {
     const alreadyRequested = await requestedUser.findOne({ userId });
     if (alreadyRequested) {
@@ -45,4 +44,4 @@ const UpdateProfile = async (req, res) => {
 };
 
 
-module.exports = { requestForRole, UpdateProfile };
+module.exports = { requestForUpgradeRole, UpdateProfile };

@@ -1,12 +1,11 @@
 const express = require("express");
 const authMiddleware = require("../middlewares/auth.middleware");
-const { requestForRole, UpdateProfile } = require("../controllers/user.controller");
-const User = require("../models/users.model");
+const { UpdateProfile, requestForUpgradeRole } = require("../controllers/user.controller");
 
 
 const router = express.Router();
 
-router.put("/request-organizer", authMiddleware, requestForRole);
+router.put("/request-organizer", authMiddleware, requestForUpgradeRole);
 router.put("/profile", authMiddleware, UpdateProfile);
 
 
