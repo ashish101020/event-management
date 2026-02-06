@@ -22,14 +22,14 @@ const requestForRole = async (req, res) => {
 const UpdateProfile = async (req, res) => {
   try {
     const { name } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user._id;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.name = name ?? user.name;
+    if (name) user.name = name;
 
     await user.save();
 
@@ -43,5 +43,6 @@ const UpdateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 module.exports = { requestForRole, UpdateProfile };
