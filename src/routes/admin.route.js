@@ -5,24 +5,28 @@ const RequestedUser = require('../models/requestForRole.model');
 
 const router = express.Router();
 
-router.get("/organizer-requests", authMiddleware, authorize, async (req, res) => {
-  try {
-    const requests = await RequestedUser.find();
-    console.log('herre');
-    
-
-    res.status(200).json(requests); 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+router.get(
+  "/organizer-requests",
+  authMiddleware,
+  authorize(),
+  async (req, res) => {
+    try {
+      console.log("herre");
+      const requests = await RequestedUser.find();
+      res.status(200).json(requests);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
-});
+);
+
 
 
 router.put(
   "/users/:user_id/approve-organizer",
   authMiddleware,
-  authorize("admin"),
+  authorize(),
   async (req, res) => {
     try {
       const { user_id } = req.params;
@@ -44,7 +48,7 @@ router.put(
 );
 
 
-router.delete("/event/:eventId", authMiddleware, authorize, async (req, res) => {
+router.delete("/event/:eventId", authMiddleware, authorize(), async (req, res) => {
   try {
     const { eventId } = req.params;
 

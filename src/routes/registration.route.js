@@ -28,8 +28,6 @@ router.post("/:eventId", authMiddleware, async (req, res) => {
   }
 });
 
-const mongoose = require("mongoose");
-
 router.delete("/:eventId", authMiddleware, async (req, res) => {
   try {
     const { eventId } = req.params;

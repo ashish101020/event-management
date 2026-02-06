@@ -16,6 +16,6 @@ const registeredEventSchema = new Schema({
 registeredEventSchema.index({ eventId: 1, userId: 1 }, { unique: true });
 
 
-const RegisteredEvent = model('registered-event', registeredEventSchema);
+const RegisteredEvent = model('registered-events', registeredEventSchema);
 
 module.exports = RegisteredEvent;

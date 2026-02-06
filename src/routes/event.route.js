@@ -29,7 +29,7 @@ router.get("/:eventId", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/", authMiddleware, authorizeAll, upload.array("image", 5), async (req, res) => {
+router.post("/", authMiddleware, authorizeAll(), upload.array("image", 5), async (req, res) => {
   try {
     const {
       title,
@@ -91,9 +91,9 @@ router.post("/", authMiddleware, authorizeAll, upload.array("image", 5), async (
 });
 
 
-router.delete("/:eventId", authMiddleware, authorizeAll, deleteEventByOrganizer);
+router.delete("/:eventId", authMiddleware, authorizeAll(), deleteEventByOrganizer);
 
-router.put("/:eventId", authMiddleware, authorizeAll, upload.array("photos", 5), async (req, res) => {
+router.put("/:eventId", authMiddleware, authorizeAll(), upload.array("photos", 5), async (req, res) => {
   try {
     const { eventId } = req.params;
     const { title, description, startDate, endDate, startTime, endTime, location, eventType, category } = req.body;
