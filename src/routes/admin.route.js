@@ -2,6 +2,7 @@ const express = require('express');
 const authMiddleware = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/authorize.middleware');
 const RequestedUser = require('../models/requestForRole.model');
+const User = require('../models/users.model');
 
 const router = express.Router();
 
@@ -36,7 +37,9 @@ router.put(
         return res.status(404).json({ message: "Organizer request not found" });
       }
 
+
       await User.findByIdAndUpdate(user_id, { role: "Organizer" });
+  
       await RequestedUser.deleteOne({ userId: user_id });
 
       res.status(200).json({ message: "User approved as Organizer" });

@@ -3,6 +3,8 @@ const upload = require("../middlewares/multer.middleware");
 const { createEvent, deleteEventByOrganizer, editEvent, getAllEvents } = require("../controllers/event.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const { authorizeAll } = require("../middlewares/authorize.middleware");
+const Event = require("../models/events.model");
+
 
 const router = express.Router();
 
