@@ -129,9 +129,7 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar?.url || null,
+      user,
       token,
       message: "User Registered Successfully!",
     });
