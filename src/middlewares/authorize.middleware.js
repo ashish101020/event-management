@@ -1,12 +1,5 @@
-const authorizeAll = (roles = ['Admin', 'Organizer']) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            return res.status(403).json({ message: 'Access denied: insufficient permissions' });
-        }
-        next();
-    };
-}
-const authorize = (roles = 'Admin') => {
+
+const authorize = (roles = []) => {
     return (req, res, next) => {
         if (req.user.role !== roles) {
             return res.status(403).json({ message: 'Access denied: insufficient permissions' });
@@ -15,4 +8,4 @@ const authorize = (roles = 'Admin') => {
     };
 }
 
-module.exports = { authorize, authorizeAll };
+module.exports = { authorize };

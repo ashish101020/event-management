@@ -9,7 +9,7 @@ const router = express.Router();
 router.get(
   "/organizer-requests",
   authMiddleware,
-  authorize(),
+  authorize(['Admin']),
   async (req, res) => {
     try {
       console.log("herre");
@@ -51,7 +51,7 @@ router.put(
 
 
 
-router.delete("/event/:eventId", authMiddleware, authorize(), async (req, res) => {
+router.delete("/event/:eventId", authMiddleware, authorize(['Admin']), async (req, res) => {
   try {
     const { eventId } = req.params;
 

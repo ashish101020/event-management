@@ -2,84 +2,22 @@ const fs = require("fs");
 const Event = require("../models/events.model");
 const cloudinary = require("../config/cloudinary");
 
-// ================= CREATE EVENT =================
-const createEvent = async (req, res) => {
-  try {
-    const {
-      title,
-      description,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      location,
-      eventType,
-      category,
-      image,
-    } = req.body;
 
-    const organizer = req.user.id;
-
-    const files = req.files || [];
-    let photos = [];
-
-    if (files.length) {
-      const uploadPromises = files.map(async (file) => {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder: "eventsImages",
-        });
-        fs.unlinkSync(file.path);
-
-        return {
-          url: result.secure_url,
-          public_id: result.public_id,
-        };
-      });
-
-      photos = await Promise.all(uploadPromises);
-    }
-
-    if (image) {
-      photos.push({
-        url: image,
-        public_id: null,
-      });
-    }
-
-    const event = await Event.create({
-      title,
-      description,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      location,
-      eventType,
-      category,
-      organizer,
-      photos,
-    });
-
-    res.status(201).json(event);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// ================= DELETE BY ORGANIZER =================
-const deleteEventByOrganizer = async (req, res) => {
+const deleteEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
-    const createrId = req.user.id; // logged-in organizer
+    let event;
 
-    const eventExist = await Event.findOne({ _id: eventId, organizer: createrId });
-    if (!eventExist) {
-      return res.status(404).json({ success: false, message: "Event not found" });
+    if (req.user.role === "Admin") {
+      event = await Event.findById(eventId);
+    } else {
+      event = await Event.findOne({ _id: eventId, organizer: req.user.id });
     }
 
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
     // Delete images from Cloudinary
-    for (const photo of eventExist.photos) {
+    for (const photo of event.photos) {
       if (photo.public_id) {
         await cloudinary.uploader.destroy(photo.public_id);
       }
@@ -94,55 +32,6 @@ const deleteEventByOrganizer = async (req, res) => {
   }
 };
 
-// ================= EDIT EVENT =================
-const editEvent = async (req, res) => {
-  try {
-    const { eventId, title, description, date, location, eventType, category } =
-      req.body;
-    const organizer = req.user.id;
-
-    const event = await Event.findOne({ _id: eventId, organizer });
-    if (!event) return res.status(404).json({ message: "Event not found" });
-
-    const files = req.files || [];
-
-    const uploadPromises = files.map(async (file) => {
-      const result = await cloudinary.uploader.upload(file.path, {
-        folder: "eventsImages",
-      });
-      fs.unlinkSync(file.path);
-
-      return {
-        url: result.secure_url,
-        public_id: result.public_id,
-      };
-    });
-
-    const newPhotos = await Promise.all(uploadPromises);
-
-    // Update fields safely
-    event.title = title ?? event.title;
-    event.description = description ?? event.description;
-    event.startDate = startDate ?? event.startDate;
-    event.endDate = endDate ?? event.endDate;
-    event.startTime = startDate ?? event.startTime;
-    event.endTime = endDate ?? event.endTime;
-    event.location = location ?? event.location;
-    event.eventType = eventType ?? event.eventType;
-    event.category = category ?? event.category;
-
-    if (newPhotos.length) {
-      event.photos.push(...newPhotos);
-    }
-
-    await event.save();
-
-    res.status(200).json({ message: "Event updated"});
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
 
 const endEvent = async (req, res) => {
   try {
@@ -162,17 +51,6 @@ const endEvent = async (req, res) => {
   }
 };
 
-const getEventById = async (req, res) => {
-  const { eventId } = req.params;
-  try {
-    const existingEvent = await Event.findOne({eventId});
-    if(!existingEvent) {
-      res.status(200).json(existingEvent);
-    }
-  } catch (error) {
-    res.status(500).json({message: "Server Error"});
-  }
-};
 
 const getAllEvents = async (req, res) => {
   try {
@@ -224,10 +102,7 @@ const getAllEvents = async (req, res) => {
 };
 
 module.exports = {
-  createEvent,
-  deleteEventByOrganizer,
-  editEvent,
+  deleteEvent,
   endEvent,
   getAllEvents,
-  getEventById
 };

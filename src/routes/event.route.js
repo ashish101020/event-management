@@ -1,9 +1,9 @@
 const express = require("express");
 const upload = require("../middlewares/multer.middleware");
-const { createEvent, deleteEventByOrganizer, editEvent, getAllEvents } = require("../controllers/event.controller");
+const { deleteEvent ,getAllEvents } = require("../controllers/event.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
-const { authorizeAll } = require("../middlewares/authorize.middleware");
 const Event = require("../models/events.model");
+const { authorize } = require("../middlewares/authorize.middleware");
 
 
 const router = express.Router();
@@ -31,7 +31,7 @@ router.get("/:eventId", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/", authMiddleware, authorizeAll(), upload.array("image", 5), async (req, res) => {
+router.post("/", authMiddleware, authorize(['Admin', 'Organizer']), upload.array("image", 5), async (req, res) => {
   try {
     const {
       title,
@@ -46,7 +46,7 @@ router.post("/", authMiddleware, authorizeAll(), upload.array("image", 5), async
       image,
     } = req.body;
 
-    const organizer = req.user.id || req.user._id;
+    const organizer = req.user.id;
 
     const files = req.files || [];
     let photos = [];
@@ -93,9 +93,9 @@ router.post("/", authMiddleware, authorizeAll(), upload.array("image", 5), async
 });
 
 
-router.delete("/:eventId", authMiddleware, authorizeAll(), deleteEventByOrganizer);
+router.delete("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), deleteEvent);
 
-router.put("/:eventId", authMiddleware, authorizeAll(), upload.array("photos", 5), async (req, res) => {
+router.put("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), upload.array("photos", 5), async (req, res) => {
   try {
     const { eventId } = req.params;
     const { title, description, startDate, endDate, startTime, endTime, location, eventType, category } = req.body;
