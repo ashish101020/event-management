@@ -1,4 +1,5 @@
 const requestedUser = require("../models/requestForRole.model");
+const User = require("../models/users.model");
 
 const requestForRole = async (req, res) => {
   const userId = req.user.id;
