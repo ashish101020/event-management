@@ -9,6 +9,6 @@ const requestForRoleSchema = new Schema({
   }
 }, { timestamps: true });
 
-const RequestedUser = model('requestedUser', requestForRoleSchema);
+const RequestedUser = model('requesteduser', requestForRoleSchema);
 
 module.exports = RequestedUser;

@@ -8,6 +8,8 @@ const router = express.Router();
 router.get("/organizer-requests", authMiddleware, authorize, async (req, res) => {
   try {
     const requests = await RequestedUser.find();
+    console.log('herre');
+    
 
     res.status(200).json(requests); 
   } catch (error) {
