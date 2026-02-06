@@ -6,7 +6,7 @@ const { deleteEventByAdmin } = require('../controllers/event.controller');
 
 const router = express.Router();
 
-router.get("/organizer-requests", authMiddleware, authorize("admin"), async (req, res) => {
+router.get("/organizer-requests", authMiddleware, authorize, async (req, res) => {
   try {
     const requests = await RequestedUser.find().populate("userId", "name email");
     res.status(200).json({ success: true, requests });
