@@ -24,4 +24,6 @@ const eventSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = model("events", eventSchema);
+const Event = model("events", eventSchema);
+
+module.exports = Event;

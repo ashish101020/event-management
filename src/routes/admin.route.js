@@ -8,36 +8,40 @@ const router = express.Router();
 
 router.get("/organizer-requests", authMiddleware, authorize, async (req, res) => {
   try {
-    const requests = await RequestedUser.find().populate("userId", "name email");
-    res.status(200).json({ success: true, requests });
+    const requests = await RequestedUser.find()
+      .populate("userId", "name email");
+
+    res.status(200).json(requests); 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-router.patch("/users/:user_id/approve-organizer", authMiddleware, authorize("admin"), async (req, res) => {
-  try {
-    const { user_id } = req.params;
 
-    // Find organizer request by USER id
-    const request = await RequestedUser.findOne({ userId: user_id });
-    if (!request) {
-      return res.status(404).json({ message: "Organizer request not found" });
+router.put(
+  "/users/:user_id/approve-organizer",
+  authMiddleware,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const { user_id } = req.params;
+
+      const request = await RequestedUser.findOne({ userId: user_id });
+      if (!request) {
+        return res.status(404).json({ message: "Organizer request not found" });
+      }
+
+      await User.findByIdAndUpdate(user_id, { role: "Organizer" });
+      await RequestedUser.deleteOne({ userId: user_id });
+
+      res.status(200).json({ message: "User approved as Organizer" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
     }
-
-    // Update user role
-    await User.findByIdAndUpdate(user_id, { role: "Organizer" });
-
-    // Remove the request entry
-    await RequestedUser.deleteOne({ userId: user_id });
-
-    res.status(200).json({ message: "User approved as Organizer" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
   }
-});
+);
 
 
 router.delete("/event/:eventId", authMiddleware, authorize, async (req, res) => {

@@ -1,6 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middlewares/auth.middleware');
 const RegisteredEvent = require('../models/registeredEvent.model');
+const Event = require('../models/events.model');
 const router = express.Router();
 
 router.post("/:eventId", authMiddleware, async (req, res) => {
@@ -27,11 +28,13 @@ router.post("/:eventId", authMiddleware, async (req, res) => {
   }
 });
 
-router.delete("/:eventId", authMiddleware, async (req, res) => {
-  const { eventId } = req.params;
-  const userId = req.user.id;
+const mongoose = require("mongoose");
 
+router.delete("/:eventId", authMiddleware, async (req, res) => {
   try {
+    const { eventId } = req.params;
+    const userId = req.user.id || req.user._id;
+
     const registration = await RegisteredEvent.findOneAndDelete({ eventId, userId });
 
     if (!registration) {
@@ -39,6 +42,7 @@ router.delete("/:eventId", authMiddleware, async (req, res) => {
     }
 
     res.status(200).json({ message: "Registration cancelled" });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
