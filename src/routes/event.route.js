@@ -36,8 +36,8 @@ router.get("/:eventId", authMiddleware, async (req, res) => {
 router.post(
   "/",
   authMiddleware,
-  authorize(['Admin', 'Organizer']),
-  upload.array("image", 5),
+  authorize(["Admin", "Organizer"]),
+  upload.array("image", 5), 
   async (req, res) => {
     try {
       const {
@@ -50,21 +50,29 @@ router.post(
         location,
         eventType,
         category,
-        image,
+        image, // image URL from JSON (Cypress test case)
       } = req.body;
 
       const organizer = req.user.id;
-
       const files = req.files || [];
       let photos = [];
 
-      if (files.length) {
+      // ✅ If files uploaded (multipart/form-data)
+      if (files.length > 0) {
         const uploadPromises = files.map(async (file) => {
           const result = await cloudinary.uploader.upload(file.path, {
             folder: "eventsImages",
           });
-          fs.unlinkSync(file.path);
-          return { url: result.secure_url, public_id: result.public_id };
+
+          // remove temp file if it exists (important for disk storage)
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+
+          return {
+            url: result.secure_url,
+            public_id: result.public_id,
+          };
         });
 
         photos = await Promise.all(uploadPromises);
@@ -94,7 +102,7 @@ router.post(
 
       res.status(201).json(createdEvent);
     } catch (error) {
-      console.error(error);
+      console.error("EVENT CREATE ERROR:", error); 
       res.status(500).json({ message: "Server error" });
     }
   }
