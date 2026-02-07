@@ -4,6 +4,7 @@ const { deleteEvent ,getAllEvents } = require("../controllers/event.controller")
 const authMiddleware = require("../middlewares/auth.middleware");
 const Event = require("../models/events.model");
 const { authorize } = require("../middlewares/authorize.middleware");
+const cloudinary = require("../config/cloudinary");
 
 
 const router = express.Router();
