@@ -10,28 +10,7 @@ const fs = require("fs");
 
 const router = express.Router();
 
-router.get("/:eventId", authMiddleware, async (req, res) => {
-  const { eventId } = req.params;
 
-  try {
-    const event = await Event.findById(eventId);
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    res.status(200).json({title: event.title, description: event.description});
-  } catch (error) {
-    console.error(error);
-
-    // Invalid MongoDB ObjectId format
-    if (error.name === "CastError") {
-      return res.status(400).json({ message: "Invalid event ID" });
-    }
-
-    res.status(500).json({ message: "Server Error" });
-  }
-});
 
 router.post(
   "/",
@@ -50,7 +29,7 @@ router.post(
         location,
         eventType,
         category,
-        image, // image URL from JSON (Cypress test case)
+        image, 
       } = req.body;
 
       const organizer = req.user.id;
@@ -108,7 +87,28 @@ router.post(
   }
 );
 
+router.get("/:eventId", authMiddleware, async (req, res) => {
+  const { eventId } = req.params;
 
+  try {
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.status(200).json({title: event.title, description: event.description});
+  } catch (error) {
+    console.error(error);
+
+    // Invalid MongoDB ObjectId format
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
+
+    res.status(500).json({ message: "Server Error" });
+  }
+});
 
 router.delete("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), deleteEvent);
 
