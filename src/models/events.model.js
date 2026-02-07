@@ -1,29 +1,40 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose");
 
-const eventSchema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  startTime: { type: Date, required: true },
-  endDate: { type: Date, required: true },
-  endTime: { type: Date, required: true },
-  location: { type: String, required: true },
-  eventType: { type: String, enum: ["online", "offline"] },
-  status: { type: String, enum: ["Upcoming", "Ongoing", "Completed"], default: "Upcoming" },
-  category: { type: String },
+const eventSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
 
-  organizer: { type: Schema.Types.ObjectId, ref: "users", required: true },
+    startDate: { type: String, required: true }, 
+    startTime: { type: String, required: true }, 
 
-  photos: [
-    {
-      url: String,
-      public_id: String,
+    endDate: { type: String, required: true },
+    endTime: { type: String, required: true },
+
+    location: { type: String, required: true },
+
+    eventType: {
+      type: String,
+      enum: ["Online", "Offline"],
+      required: true,
     },
-  ],
 
-  createdAt: { type: Date, default: Date.now },
-});
+    category: { type: String, required: true },
 
-const Event = model("events", eventSchema);
+    organizer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
-module.exports = Event;
+    photos: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("events", eventSchema);

@@ -112,56 +112,102 @@ router.get("/:eventId", authMiddleware, async (req, res) => {
 
 router.delete("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), deleteEvent);
 
-router.put("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), upload.array("photos", 5), async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const { title, description, startDate, endDate, startTime, endTime, location, eventType, category } = req.body;
+const mongoose = require("mongoose");
 
-    let event;
+router.put(
+  "/:eventId",
+  authMiddleware,
+  authorize(["Admin", "Organizer"]),
+  upload.array("photos", 5),
+  async (req, res) => {
+    try {
+      const { eventId } = req.params;
 
-    if (req.user.role === "Admin") {
-      event = await Event.findById(eventId);
-    } else {
-      event = await Event.findOne({ _id: eventId, organizer: req.user.id });
+      // 🔒 Prevent CastError crash
+      if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        return res.status(400).json({ message: "Invalid event ID" });
+      }
+
+      const {
+        title,
+        description,
+        startDate,
+        endDate,
+        startTime,
+        endTime,
+        location,
+        eventType,
+        category,
+      } = req.body;
+
+      let event;
+
+      if (req.user.role === "Admin") {
+        event = await Event.findById(eventId);
+      } else {
+        event = await Event.findOne({ _id: eventId, organizer: req.user.id });
+      }
+
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      const files = req.files || [];
+      let newPhotos = [];
+
+      // ✅ Only upload if files exist
+      if (files.length > 0) {
+        const uploadPromises = files.map(async (file) => {
+          const result = await cloudinary.uploader.upload(file.path, {
+            folder: "eventsImages",
+          });
+
+          // Remove temp file safely (important on server)
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+
+          return {
+            url: result.secure_url,
+            public_id: result.public_id,
+          };
+        });
+
+        newPhotos = await Promise.all(uploadPromises);
+      }
+
+      // ✅ Safe field updates
+      event.title = title ?? event.title;
+      event.description = description ?? event.description;
+      event.startDate = startDate ?? event.startDate;
+      event.endDate = endDate ?? event.endDate;
+      event.startTime = startTime ?? event.startTime;
+      event.endTime = endTime ?? event.endTime;
+      event.location = location ?? event.location;
+      event.eventType = eventType ?? event.eventType;
+      event.category = category ?? event.category;
+
+      if (newPhotos.length > 0) {
+        event.photos.push(...newPhotos);
+      }
+
+      await event.save();
+
+      const updatedEvent = event.toObject();
+      updatedEvent._id = updatedEvent._id.toString();
+      updatedEvent.organizer = updatedEvent.organizer.toString();
+
+      res.status(200).json({
+        message: "Event updated",
+        event: updatedEvent,
+      });
+    } catch (err) {
+      console.error("EVENT UPDATE ERROR:", err);
+      res.status(500).json({ message: "Server error" });
     }
-
-    if (!event) return res.status(404).json({ message: "Event not found" });
-
-    const files = req.files || [];
-
-    const uploadPromises = files.map(async (file) => {
-      const result = await cloudinary.uploader.upload(file.path, { folder: "eventsImages" });
-      fs.unlinkSync(file.path);
-      return { url: result.secure_url, public_id: result.public_id };
-    });
-
-    const newPhotos = await Promise.all(uploadPromises);
-
-    // Safe field updates
-    event.title = title ?? event.title;
-    event.description = description ?? event.description;
-    event.startDate = startDate ?? event.startDate;
-    event.endDate = endDate ?? event.endDate;
-    event.startTime = startTime ?? event.startTime;
-    event.endTime = endTime ?? event.endTime;
-    event.location = location ?? event.location;
-    event.eventType = eventType ?? event.eventType;
-    event.category = category ?? event.category;
-
-    if (newPhotos.length) event.photos.push(...newPhotos);
-
-    await event.save();
-
-    const updatedEvent = event.toObject();
-    updatedEvent.organizer = updatedEvent.organizer.toString();
-
-    res.status(200).json({ message: "Event updated", event: updatedEvent });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
   }
-});
+);
+
 
 
 module.exports = router;
