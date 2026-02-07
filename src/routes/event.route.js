@@ -32,66 +32,73 @@ router.get("/:eventId", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/", authMiddleware, authorize(['Admin', 'Organizer']), upload.array("image", 5), async (req, res) => {
-  try {
-    const {
-      title,
-      description,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      location,
-      eventType,
-      category,
-      image,
-    } = req.body;
+router.post(
+  "/",
+  authMiddleware,
+  authorize(['Admin', 'Organizer']),
+  upload.array("image", 5),
+  async (req, res) => {
+    try {
+      const {
+        title,
+        description,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        location,
+        eventType,
+        category,
+        image,
+      } = req.body;
 
-    const organizer = req.user.id;
+      const organizer = req.user.id;
 
-    const files = req.files || [];
-    let photos = [];
+      const files = req.files || [];
+      let photos = [];
 
-    if (files.length) {
-      const uploadPromises = files.map(async (file) => {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder: "eventsImages",
+      if (files.length) {
+        const uploadPromises = files.map(async (file) => {
+          const result = await cloudinary.uploader.upload(file.path, {
+            folder: "eventsImages",
+          });
+          fs.unlinkSync(file.path);
+          return { url: result.secure_url, public_id: result.public_id };
         });
-        fs.unlinkSync(file.path);
 
-        return { url: result.secure_url, public_id: result.public_id };
+        photos = await Promise.all(uploadPromises);
+      }
+
+      if (image) {
+        photos.push({ url: image, public_id: null });
+      }
+
+      const event = await Event.create({
+        title,
+        description,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        location,
+        eventType,
+        category,
+        organizer,
+        photos,
       });
 
-      photos = await Promise.all(uploadPromises);
+      const createdEvent = event.toObject();
+      createdEvent._id = createdEvent._id.toString();
+      createdEvent.organizer = createdEvent.organizer.toString();
+
+      res.status(201).json(createdEvent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
     }
-
-    if (image) {
-      photos.push({ url: image, public_id: null });
-    }
-
-    const event = await Event.create({
-      title,
-      description,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      location,
-      eventType,
-      category,
-      organizer,
-      photos,
-    });
-
-    const createdEvent = event.toObject();
-    createdEvent.organizer = createdEvent.organizer.toString();
-
-    res.status(201).json(createdEvent);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
   }
-});
+);
+
 
 
 router.delete("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), deleteEvent);
