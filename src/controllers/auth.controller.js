@@ -8,13 +8,14 @@ require('dotenv').config();
 
 
 const generateToken = ({ id, role }) => {
-
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
-}; 
-
+  return jwt.sign(
+    { id, role },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRATION }
+  );
+};
 
 const googleLogin = async (req, res) => {
-  
   try {
     const { code } = req.body;
 
@@ -22,60 +23,60 @@ const googleLogin = async (req, res) => {
       return res.status(400).json({ message: "Authorization code required" });
     }
 
-    // 1. Exchange code for tokens
+    //  Exchange code for tokens
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
 
-    // 2. Fetch user profile from Google
+    //  Fetch Google profile
     const userRes = await axios.get(
       "https://www.googleapis.com/oauth2/v2/userinfo",
       {
-        headers: {
-          Authorization: `Bearer ${tokens.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
       }
     );
 
     const { email, name, picture, id: google_id } = userRes.data;
 
-    // 3. Check if user exists
-    let userExisted = User.findOne({ email });
+    //  Check if user exists
+    let userExisted = await User.findOne({ email });
+    let user;
 
-    let userId;
-
-    if (rows.length === 0) {
-      let user = await User.create({google_id, email, name ,avatar: picture});
-      userId = user.id;
+    if (!userExisted) {
+      user = await User.create({
+        google_id,
+        email,
+        name,
+        avatar: picture,
+        role: "User",
+      });
     } else {
-      userId = userExisted.id;
+      user = userExisted;
     }
 
-    // 4. Generate JWT
-    const token = jwt.sign(
-      { id: userId, email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRATION }
-    );
+    //  Generate JWT
+    const token = generateToken({ id: user._id, role: user.role });
 
-    // 5. Send response
+    // Response
     res.status(200).json({
       success: true,
       token,
       user: {
-        id: userId,
-        name,
-        email,
-        picture,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        picture: user.avatar,
       },
     });
+
   } catch (error) {
-    console.error("Google OAuth Error:", error);
+    console.error("Google OAuth Error:", error.response?.data || error.message);
     res.status(500).json({
       success: false,
       message: "Google authentication failed",
     });
   }
 };
+
 
 const register = async (req, res) => {
   try {
