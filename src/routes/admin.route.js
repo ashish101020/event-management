@@ -9,32 +9,42 @@ const router = express.Router();
 router.get(
   "/organizer-requests",
   authMiddleware,
-  authorize(['Admin']),
+  authorize(["Admin"]),
   async (req, res) => {
     try {
-      console.log("herre");
-      const requests = await RequestedUser.find();
+      const requests = await RequestedUser.find()
+        .populate({
+          path: "userId",
+          select: "name email avatar role createdAt",
+        })
+        .sort({ createdAt: -1 }); // newest first (optional but nice)
+
       res.status(200).json(requests);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ success: false, message: "Internal server error" });
     }
   }
 );
 
 
-
 router.put(
-  "/users/:user_id/approve-organizer",
+  "/users/:user_id/approve-organizer/:response",
   authMiddleware,
   authorize(['Admin']),
   async (req, res) => {
     try {
-      const { user_id } = req.params;
+      const { user_id, response } = req.params;
+      console.log(user_id)
 
-      const request = await RequestedUser.findOne({ userId: user_id });
+      const request = await RequestedUser.findOne(user_id);
       if (!request) {
         return res.status(404).json({ message: "Organizer request not found" });
+      }
+
+      if(response === 'reject'){
+        await RequestedUser.findByIdAndDelete(request._id);
+      res.status(200).json({ message: "User rejected for Organizer" });
       }
 
       await User.findByIdAndUpdate(user_id, { role: "Organizer" });

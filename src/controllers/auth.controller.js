@@ -18,15 +18,14 @@ const generateToken = ({ id, role }) => {
 const googleLogin = async (req, res) => {
   try {
     const { code } = req.body;
-
     if (!code) {
       return res.status(400).json({ message: "Authorization code required" });
     }
-
+    
     //  Exchange code for tokens
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
-
+    
     //  Fetch Google profile
     const userRes = await axios.get(
       "https://www.googleapis.com/oauth2/v2/userinfo",
@@ -47,7 +46,7 @@ const googleLogin = async (req, res) => {
         email,
         name,
         avatar: picture,
-        role: "User",
+        role: "Participant",
       });
     } else {
       user = userExisted;
@@ -65,6 +64,7 @@ const googleLogin = async (req, res) => {
         name: user.name,
         email: user.email,
         picture: user.avatar,
+        role:user.role
       },
     });
 
@@ -122,6 +122,7 @@ const register = async (req, res) => {
       email,
       password,
       avatar: avatarData,
+      role: "Participant",
     });
 
     // 🔐 Generate token
@@ -129,7 +130,13 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      user,
+      user: {
+        id:user._id,
+        name: user.name,
+        email:user.email,
+        role:user.role,
+        avatar: user.avatar
+      },
       token,
       message: "User Registered Successfully!",
     });
@@ -170,7 +177,9 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email:user.email
+        email:user.email,
+        role:user.role,
+        avatar:user.avatar
       },
       token,
       message: "Login Successfully!",
