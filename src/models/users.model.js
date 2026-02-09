@@ -25,7 +25,7 @@ const userSchema = new Schema(
     participatedEventsId: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Event",
+        ref: "events",
       },
     ],
 

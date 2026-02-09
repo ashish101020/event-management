@@ -3,7 +3,7 @@ const { Schema, model } = require("mongoose");
 const requestForRoleSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
     unique: true
   }
