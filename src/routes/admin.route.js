@@ -35,7 +35,7 @@ router.put(
   async (req, res) => {
     try {
       const { user_id } = req.params;
-      const { response } = req.body;
+      // const { response } = req.body;
 
       //  Find organizer request using userId field
       const request = await RequestedUser.findOne({ userId: user_id });
@@ -43,20 +43,20 @@ router.put(
         return res.status(404).json({ message: "Organizer request not found" });
       }
 
-      //  Reject flow
-      if (response === "reject") {
-        await RequestedUser.findByIdAndDelete(request._id);
-        return res.status(200).json({ success: true, message: "User rejected for Organizer" });
-      }
+      // //  Reject flow
+      // if (response === "reject") {
+      //   await RequestedUser.findByIdAndDelete(request._id);
+      //   return res.status(200).json({ success: true, message: "User rejected for Organizer" });
+      // }
 
       //  Approve flow
-      if (response === "accept") {
+      // if (response === "accept") {
         await User.findByIdAndUpdate(user_id, { role: "Organizer" });
 
         await RequestedUser.findByIdAndDelete(request._id);
 
         return res.status(200).json({ success: true, message: "User approved as Organizer" });
-      }
+      // }
 
       // Invalid response
       res.status(400).json({ success:false, message: "Invalid response type" });
