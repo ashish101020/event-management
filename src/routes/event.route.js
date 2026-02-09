@@ -136,7 +136,36 @@ router.get("/", async (req, res) => {
 });
 
 router.get(
-  "/:user_id",
+  "/:event_id",
+  authMiddleware,
+  // authorize(["Admin", "Organizer"]),
+  async (req, res) => {
+    const { event_id } = req.params;
+
+    try {
+      const event = await Event.findById(event_id);
+
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      res
+        .status(200)
+        .json({ title: event.title, description: event.description });
+    } catch (error) {
+      console.error(error);
+
+      // Invalid MongoDB ObjectId format
+      if (error.name === "CastError") {
+        return res.status(400).json({ message: "Invalid event ID" });
+      }
+
+      res.status(500).json({ message: "Server Error" });
+    }
+  },
+);
+router.get(
+  "/user/:user_id",
   authMiddleware,
   authorize(["Admin", "Organizer"]),
   async (req, res) => {
