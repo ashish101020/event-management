@@ -87,7 +87,7 @@ router.post(
   },
 );
 
-router.get("/", authMiddleware, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const { title, type, location, date } = req.query;
     // const page = parseInt(req.query.page) || 1;
