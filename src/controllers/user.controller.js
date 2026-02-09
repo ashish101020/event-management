@@ -75,11 +75,9 @@ const UpdateProfile = async (req, res) => {
 
     res.status(200).json({
       message: "Profile updated successfully",
-      user: {
-        name: user.name,
+      name: user.name,
         email: user.email,
         avatar: user.avatar,
-      },
     });
   } catch (error) {
     console.error("Update Profile Error:", error);
