@@ -1,22 +1,22 @@
 const express = require("express");
 const upload = require("../middlewares/multer.middleware");
-const { deleteEvent ,getAllEvents } = require("../controllers/event.controller");
+const {
+  deleteEvent,
+  getAllEvents,
+} = require("../controllers/event.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const Event = require("../models/events.model");
 const { authorize } = require("../middlewares/authorize.middleware");
 const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
 
-
 const router = express.Router();
-
-
 
 router.post(
   "/",
   authMiddleware,
   authorize(["Admin", "Organizer"]),
-  upload.array("image", 5), 
+  upload.array("image", 5),
   async (req, res) => {
     try {
       const {
@@ -29,7 +29,7 @@ router.post(
         location,
         eventType,
         category,
-        image, 
+        image,
       } = req.body;
 
       const organizer = req.user.id;
@@ -81,10 +81,10 @@ router.post(
 
       res.status(201).json(createdEvent);
     } catch (error) {
-      console.error("EVENT CREATE ERROR:", error); 
+      console.error("EVENT CREATE ERROR:", error);
       res.status(500).json({ message: "Server error" });
     }
-  }
+  },
 );
 
 router.get("/", authMiddleware, async (req, res) => {
@@ -120,10 +120,9 @@ router.get("/", authMiddleware, async (req, res) => {
       filter.date = { $gte: start, $lte: end };
     }
 
-    const events = await Event.find(filter)
-      .sort({ date: 1 })
-      // .skip(skip)
-      // .limit(limit);
+    const events = await Event.find(filter).sort({ date: 1 });
+    // .skip(skip)
+    // .limit(limit);
 
     res.status(200).json({
       success: true,
@@ -136,30 +135,42 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/:event_id", authMiddleware, authorize(["Admin", "Organizer"]), async (req, res) => {
-  const { event_id } = req.params;
+router.get(
+  "/:event_id",
+  authMiddleware,
+  // authorize(["Admin", "Organizer"]),
+  async (req, res) => {
+    const { event_id } = req.params;
 
-  try {
-    const event = await Event.findById(event_id);
+    try {
+      const event = await Event.findById(event_id);
 
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      res
+        .status(200)
+        .json({ title: event.title, description: event.description });
+    } catch (error) {
+      console.error(error);
+
+      // Invalid MongoDB ObjectId format
+      if (error.name === "CastError") {
+        return res.status(400).json({ message: "Invalid event ID" });
+      }
+
+      res.status(500).json({ message: "Server Error" });
     }
+  },
+);
 
-    res.status(200).json({title: event.title, description: event.description});
-  } catch (error) {
-    console.error(error);
-
-    // Invalid MongoDB ObjectId format
-    if (error.name === "CastError") {
-      return res.status(400).json({ message: "Invalid event ID" });
-    }
-
-    res.status(500).json({ message: "Server Error" });
-  }
-});
-
-router.delete("/:eventId", authMiddleware, authorize(['Admin', 'Organizer']), deleteEvent);
+router.delete(
+  "/:eventId",
+  authMiddleware,
+  authorize(["Admin", "Organizer"]),
+  deleteEvent,
+);
 
 const mongoose = require("mongoose");
 
@@ -254,9 +265,7 @@ router.put(
       console.error("EVENT UPDATE ERROR:", err);
       res.status(500).json({ message: "Server error" });
     }
-  }
+  },
 );
-
-
 
 module.exports = router;
