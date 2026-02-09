@@ -29,12 +29,13 @@ router.get(
 
 
 router.put(
-  "/users/:user_id/approve-organizer/:response",
+  "/users/:user_id/approve-organizer",
   authMiddleware,
   authorize(["Admin"]),
   async (req, res) => {
     try {
-      const { user_id, response } = req.params;
+      const { user_id } = req.params;
+      const { response } = req.body;
 
       //  Find organizer request using userId field
       const request = await RequestedUser.findOne({ userId: user_id });
