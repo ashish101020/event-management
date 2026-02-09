@@ -23,7 +23,8 @@ const requestForUpgradeRole = async (req, res) => {
 
 const UpdateProfile = async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { name } = req.body;
+    const avatar = "ram";
     const userId = req.user.id || req.user._id;
 
     const user = await User.findById(userId);
