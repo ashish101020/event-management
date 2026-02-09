@@ -136,14 +136,14 @@ router.get("/", async (req, res) => {
 });
 
 router.get(
-  "/:event_id",
+  "/:user_id",
   authMiddleware,
-  // authorize(["Admin", "Organizer"]),
+  authorize(["Admin", "Organizer"]),
   async (req, res) => {
-    const { event_id } = req.params;
+    const { user_id } = req.params;
 
     try {
-      const event = await Event.findById(event_id);
+      const event = await Event.find({ organizer: user_id });
 
       if (!event) {
         return res.status(404).json({ message: "Event not found" });
@@ -151,7 +151,12 @@ router.get(
 
       res
         .status(200)
-        .json({ title: event.title, description: event.description });
+        .json({
+          title: event.title,
+          description: event.description,
+          id: event._id,
+          status: event.status,
+        });
     } catch (error) {
       console.error(error);
 
