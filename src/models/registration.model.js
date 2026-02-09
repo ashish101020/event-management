@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const registeredEventSchema = new Schema({
+const registrationSchema = new Schema({
   eventId: {
     type: Schema.Types.ObjectId,
     ref: "events",
@@ -13,9 +13,9 @@ const registeredEventSchema = new Schema({
   },
 }, { timestamps: true });
 
-registeredEventSchema.index({ eventId: 1, userId: 1 }, { unique: true });
+registrationSchema.index({ eventId: 1, userId: 1 }, { unique: true });
 
 
-const RegisteredEvent = model('registered-events', registeredEventSchema);
+const Registration = model('registered-events', registrationSchema);
 
-module.exports = RegisteredEvent;
+module.exports = Registration;

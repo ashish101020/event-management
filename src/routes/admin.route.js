@@ -31,60 +31,41 @@ router.get(
 router.put(
   "/users/:user_id/approve-organizer/:response",
   authMiddleware,
-  authorize(['Admin']),
+  authorize(["Admin"]),
   async (req, res) => {
     try {
       const { user_id, response } = req.params;
-      console.log(user_id)
 
-      const request = await RequestedUser.findOne(user_id);
+      //  Find organizer request using userId field
+      const request = await RequestedUser.findOne({ userId: user_id });
       if (!request) {
         return res.status(404).json({ message: "Organizer request not found" });
       }
 
-      if(response === 'reject'){
+      //  Reject flow
+      if (response === "reject") {
         await RequestedUser.findByIdAndDelete(request._id);
-      res.status(200).json({ message: "User rejected for Organizer" });
+        return res.status(200).json({ success: true, message: "User rejected for Organizer" });
       }
 
-      await User.findByIdAndUpdate(user_id, { role: "Organizer" });
+      //  Approve flow
+      if (response === "accept") {
+        await User.findByIdAndUpdate(user_id, { role: "Organizer" });
 
-      await RequestedUser.findByIdAndDelete(request._id);
+        await RequestedUser.findByIdAndDelete(request._id);
 
-      res.status(200).json({ message: "User approved as Organizer" });
+        return res.status(200).json({ success: true, message: "User approved as Organizer" });
+      }
+
+      // Invalid response
+      res.status(400).json({ success:false, message: "Invalid response type" });
+
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
     }
   }
 );
-
-
-
-router.delete("/event/:eventId", authMiddleware, authorize(['Admin']), async (req, res) => {
-  try {
-    const { eventId } = req.params;
-
-    const eventExist = await Event.findById(eventId);
-    if (!eventExist) {
-      return res.status(404).json({ success: false, message: "Event not found" });
-    }
-
-    // Delete images from Cloudinary
-    for (const photo of eventExist.photos) {
-      if (photo.public_id) {
-        await cloudinary.uploader.destroy(photo.public_id);
-      }
-    }
-
-    await Event.findByIdAndDelete(eventId);
-
-    res.status(200).json({ success: true, message: "Event deleted by admin" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server Error" });
-  }
-});
 
 
 
