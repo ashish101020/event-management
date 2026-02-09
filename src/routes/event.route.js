@@ -137,8 +137,6 @@ router.get("/", async (req, res) => {
 
 router.get(
   "/:event_id",
-  authMiddleware,
-  // authorize(["Admin", "Organizer"]),
   async (req, res) => {
     const { event_id } = req.params;
 
