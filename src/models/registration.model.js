@@ -3,12 +3,12 @@ const { Schema, model } = require("mongoose");
 const registrationSchema = new Schema({
   eventId: {
     type: Schema.Types.ObjectId,
-    ref: "events",
+    ref: "Event",
     required: true,
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: "users",
+    ref: "User",
     required: true,
   },
 }, { timestamps: true });

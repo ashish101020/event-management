@@ -18,6 +18,7 @@ const eventSchema = new mongoose.Schema(
       enum: ["Online", "Offline"],
       required: true,
     },
+     status: { type: String, enum: ["Upcoming", "Oncoing", "Completed"], default: "Upcoming"},
 
     category: { type: String, required: true },
 
