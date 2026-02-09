@@ -136,11 +136,11 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/organized", authMiddleware, authorize(["Admin", "Organizer"]), async (req, res) => {
-  const organizerId = req.body.id;
+router.get("/:event_id", authMiddleware, authorize(["Admin", "Organizer"]), async (req, res) => {
+  const { event_id } = req.params;
 
   try {
-    const event = await Event.findById({organizer: organizerId});
+    const event = await Event.findById(event_id);
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
