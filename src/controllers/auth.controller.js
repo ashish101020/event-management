@@ -21,11 +21,9 @@ const googleLogin = async (req, res) => {
     if (!code) {
       return res.status(400).json({ message: "Authorization code required" });
     }
-    console.log(code);
     
     //  Exchange code for tokens
     const { tokens } = await oAuth2Client.getToken(code);
-    console.log(token);
     
     oAuth2Client.setCredentials(tokens);
     console.log('before google response');
@@ -37,7 +35,7 @@ const googleLogin = async (req, res) => {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
       }
     );
-    console.log('before google response');
+    console.log('after google response');
 
     const { email, name, picture, id: google_id } = userRes.data;
 
