@@ -26,6 +26,6 @@ app.use('/api/registration', registrationRoute);
 app.use('/api/users', userRoute);
 app.use('/api/admin', adminRoute);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
